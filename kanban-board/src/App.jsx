@@ -1,8 +1,8 @@
 import React from "react";
-import KabanBoard from "./components/KabanBoard";
+import KanbanBoard from "./components/KanbanBoard";
 
 const App = () => {
-  return <KabanBoard />;
+  return <KanbanBoard />;
 };
 
 export default App;

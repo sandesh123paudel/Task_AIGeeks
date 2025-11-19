@@ -2,7 +2,7 @@ import React, { use, useEffect, useState } from "react";
 import Column from "./Column";
 import Button from "./Button";
 
-const KabanBoard = () => {
+const KanbanBoard = () => {
   const initialColumns = [
     {
       id: "todo",
@@ -28,13 +28,12 @@ const KabanBoard = () => {
   ];
 
   const [columns, setColumns] = useState(() => {
-    const saved = localStorage.getItem("kabantasks");
+    const saved = localStorage.getItem("kanbantasks");
     return saved ? JSON.parse(saved) : initialColumns;
   });
 
   //Input Field  Popup
   const [showTaskPopup, setShowTaskPopup] = useState(false);
-  const [showColumnPopup, setShowColumnPopup] = useState(false);
 
   // Form fields
   const [taskName, setTaskName] = useState("");
@@ -82,6 +81,7 @@ const KabanBoard = () => {
     );
   };
   const onDelete = (columnId, taskId) => {
+    if (!confirm("Are you sure you want to delete this task?")) return;
     setColumns((prevColumns) =>
       prevColumns.map((col) =>
         col.id === columnId
@@ -140,21 +140,24 @@ const KabanBoard = () => {
   };
 
   useEffect(() => {
-    localStorage.setItem("kabantasks", JSON.stringify(columns));
+    localStorage.setItem("kanbantasks", JSON.stringify(columns));
   }, [columns]);
 
   return (
     <div className="min-h-screen pt-10 p-4 space-y-6 bg-gray-100">
       <div className="max-w-7xl mx-auto">
         <div className="mb-5">
-          <h1 className="text-3xl font-bold">Kaban Board</h1>
+          <h1 className="text-3xl font-bold">
+            Kanban Board (By Sandesh Paudel)
+          </h1>
           <p>Task Management Application</p>
         </div>
 
-        {/* Buttons */}
-        <div className="my-10 flex space-x-2 items-center">
+        {/* Button */}
+        <div className="my-5 flex space-x-2 items-center">
           <Button
             name={"Add Task"}
+            color={"bg-green-500 hover"}
             onClick={() => {
               // ensure a default column is selected when opening the popup
               setSelectedColumn(columns[0]?.id || "");
@@ -220,7 +223,7 @@ const KabanBoard = () => {
               <Button
                 name={"Add Task"}
                 onClick={addTask}
-                color={"bg-blue-500 hover:bg-blue-600"}
+                color={"bg-green-500 hover:bg-green-600"}
               />
             </div>
           </div>
@@ -230,4 +233,4 @@ const KabanBoard = () => {
   );
 };
 
-export default KabanBoard;
+export default KanbanBoard;

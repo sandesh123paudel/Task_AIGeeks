@@ -27,7 +27,7 @@ const Column = ({
 
   return (
     <div
-      className={`${getColumnStyle()} p-4 flex flex-col h-screen max-h-[600px] rounded-md w-1/3`}
+      className={`${getColumnStyle()} p-4 flex flex-col h-screen max-h-[600px] rounded-md w-1/3 hover:shadow-2xl bg-gray-50 transition-shadow`}
       onDragOver={handleDragOver}
       onDrop={(e) => handleDrop(e, columnId)}
     >
