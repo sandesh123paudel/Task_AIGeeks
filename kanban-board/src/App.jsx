@@ -1,11 +1,8 @@
 import React from "react";
+import KabanBoard from "./components/KabanBoard";
 
 const App = () => {
-  return (
-    <div>
-      <h1 className="text-3xl font-bold underline">Kanban-Board</h1>
-    </div>
-  );
+  return <KabanBoard />;
 };
 
 export default App;
