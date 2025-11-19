@@ -1,7 +1,16 @@
 import React from "react";
 import Card from "./Card";
 
-const Column = ({ columnId, columnName, tasks }) => {
+const Column = ({
+  columnId,
+  columnName,
+  tasks,
+  onDelete,
+  onEditing,
+  handleDragStart,
+  handleDrop,
+  handleDragOver,
+}) => {
   const getColumnStyle = () => {
     if (columnId == "todo") return "border border-red-500 ";
     if (columnId == "inprogress") return "border border-yellow-500";
@@ -15,9 +24,12 @@ const Column = ({ columnId, columnName, tasks }) => {
     if (columnId == "done") return "bg-green-500 ";
     return "bg-gray-500 ";
   };
+
   return (
     <div
       className={`${getColumnStyle()} p-4 flex flex-col h-screen max-h-[600px] rounded-md w-1/3`}
+      onDragOver={handleDragOver}
+      onDrop={(e) => handleDrop(e, columnId)}
     >
       {/* Column Header */}
       <div
@@ -31,11 +43,16 @@ const Column = ({ columnId, columnName, tasks }) => {
       <div className="mt-4 flex-1  overflow-y-auto">
         {/* Task Card */}
         {tasks.map((task) => (
-          <Card key={task.id} task={task} />
+          <Card
+            key={task.id}
+            task={task}
+            columnId={columnId}
+            onDelete={onDelete}
+            onEditing={onEditing}
+            onDragstart={handleDragStart}
+          />
         ))}
       </div>
-
-      {/* Add Task Button */}
     </div>
   );
 };
