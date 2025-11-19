@@ -27,7 +27,10 @@ const KabanBoard = () => {
     },
   ];
 
-  const [columns, setColumns] = useState(initialColumns);
+  const [columns, setColumns] = useState(() => {
+    const saved = localStorage.getItem("kabantasks");
+    return saved ? JSON.parse(saved) : initialColumns;
+  });
 
   //Input Field  Popup
   const [showTaskPopup, setShowTaskPopup] = useState(false);
@@ -91,7 +94,54 @@ const KabanBoard = () => {
     );
   };
 
-  const handleDragStart = () => {};
+  const handleDragStart = (e, task, ogColumnId) => {
+    e.dataTransfer.setData("taskId", task.id);
+    e.dataTransfer.setData("ogColumnId", ogColumnId);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e, targetColumnId) => {
+    e.preventDefault();
+    const taskId = e.dataTransfer.getData("taskId");
+    const ogColumnId = e.dataTransfer.getData("ogColumnId");
+
+    if (ogColumnId === targetColumnId) return;
+
+    setColumns((prevColumns) => {
+      let taskToMove = null;
+      const updatedCols = prevColumns.map((col) => {
+        if (col.id === ogColumnId) {
+          const taskIndex = col.tasks.findIndex((t) => t.id === taskId);
+          if (taskIndex !== -1) {
+            taskToMove = col.tasks[taskIndex];
+            return {
+              ...col,
+              tasks: col.tasks.filter((t) => t.id !== taskId),
+            };
+          }
+        }
+        return col;
+      });
+
+      return updatedCols.map((col) => {
+        if (col.id === targetColumnId && taskToMove) {
+          return {
+            ...col,
+            tasks: [...col.tasks, taskToMove],
+          };
+        }
+        return col;
+      });
+    });
+  };
+
+  useEffect(() => {
+    localStorage.setItem("kabantasks", JSON.stringify(columns));
+  }, [columns]);
 
   return (
     <div className="min-h-screen pt-10 p-4 space-y-6 bg-gray-100">
@@ -123,6 +173,9 @@ const KabanBoard = () => {
               tasks={column.tasks}
               onDelete={onDelete}
               onEditing={onEdit}
+              handleDragStart={handleDragStart}
+              handleDrop={handleDrop}
+              handleDragOver={handleDragOver}
             />
           ))}
         </div>

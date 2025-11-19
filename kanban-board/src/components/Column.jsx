@@ -41,6 +41,11 @@ const Column = ({
 
       {/* Column Tasks */}
       <div className="mt-4 flex-1  overflow-y-auto">
+        {tasks.length === 0 && (
+          <p className="text-gray-500 text-sm pt-4 italic">
+            Drag tasks here or add new one
+          </p>
+        )}
         {/* Task Card */}
         {tasks.map((task) => (
           <Card
