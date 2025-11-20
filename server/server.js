@@ -7,16 +7,20 @@ require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-app.use(cors(
-  {
-    origin:["htt"]
-  }
-));
+app.use(
+  cors({
+    origin: [
+      "https://kanban-live-sandesh.netlify.app",
+      "https://kanban-live.onrender.com/",
+    ],
+    methods: "GET,POST,PUT,DELETE,PATCH",
+    credentials: true,
+  })
+);
 app.use(express.json());
 allowedOrigins = [];
 
 app.use("/api/tasks", taskRoutes);
-
 
 mongoose
   .connect(process.env.MONGO_URI)
