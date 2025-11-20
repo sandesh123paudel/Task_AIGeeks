@@ -149,6 +149,7 @@ const KanbanBoard = () => {
         <div className="mb-5">
           <h1 className="text-3xl font-bold">
             Kanban Board (By Sandesh Paudel)
+            <span className="text-sm text-red-500"> With localStorage</span>
           </h1>
           <p>Task Management Application</p>
         </div>
@@ -164,6 +165,10 @@ const KanbanBoard = () => {
               setShowTaskPopup(true);
             }}
           />
+          <p className="text-sm text-gray-600">
+            Total Tasks:{" "}
+            {columns.reduce((acc, col) => acc + col.tasks.length, 0)}
+          </p>
         </div>
 
         {/* Columns */}

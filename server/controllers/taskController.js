@@ -75,9 +75,8 @@ exports.editTask = async (req, res) => {
 exports.deleteTask = async (req, res) => {
   try {
     const { taskId } = req.params;
-    const { columnId } = req.body;
 
-    const task = await Task.findOneAndDelete({ id: taskId, columnId });
+    const task = await Task.findOneAndDelete({ id: taskId });
     if (!task) {
       return res.status(404).json({ message: "Task Not Found" });
     }

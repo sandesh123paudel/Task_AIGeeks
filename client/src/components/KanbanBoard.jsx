@@ -2,96 +2,113 @@ import React, { use, useEffect, useState } from "react";
 import Column from "./Column";
 import Button from "./Button";
 
+const API_URL = "http://localhost:5000/api";
+
 const KanbanBoard = () => {
-  const initialColumns = [
-    {
-      id: "todo",
-      name: "To Do",
-      tasks: [
-        { id: "1", content: "Solve Home Page Issue" },
-        { id: "2", content: "Task 2" },
-      ],
-    },
-    {
-      id: "inprogress",
-      name: "In Progress",
-      tasks: [
-        { id: "3", content: "Task 3" },
-        { id: "4", content: "Task 4" },
-      ],
-    },
-    {
-      id: "done",
-      name: "Done",
-      tasks: [{ id: "5", content: "Task 5" }],
-    },
-  ];
-
-  const [columns, setColumns] = useState(() => {
-    const saved = localStorage.getItem("kanbantasks");
-    return saved ? JSON.parse(saved) : initialColumns;
-  });
-
+  const [loading, setLoading] = useState(true);
+  const [columns, setColumns] = useState([]);
   //Input Field  Popup
   const [showTaskPopup, setShowTaskPopup] = useState(false);
-
   // Form fields
   const [taskName, setTaskName] = useState("");
   const [selectedColumn, setSelectedColumn] = useState("");
 
-  const addTask = () => {
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+
+  const fetchTasks = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_URL}/tasks`);
+      const data = await response.json();
+      setColumns(data);
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const addTask = async () => {
     if (!taskName.trim() || !selectedColumn) {
-      alert("Task Name and Column Name must be selected");
+      alert("Task name and column name cannot be empty");
       return;
     }
-    const newTask = {
-      id: Date.now().toString(),
-      content: taskName.trim(),
-    };
-
-    setColumns((prevColumns) =>
-      prevColumns.map((col) =>
-        col.id === selectedColumn
-          ? {
-              ...col,
-              tasks: [...col.tasks, newTask],
-            }
-          : col
-      )
-    );
-    setTaskName("");
-    setSelectedColumn("");
-    setShowTaskPopup(false);
+    try {
+      const response = await fetch(`${API_URL}/tasks`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: Date.now().toString(),
+          content: taskName,
+          columnId: selectedColumn,
+        }),
+      });
+      if (response.ok) {
+        await fetchTasks();
+        setTaskName("");
+        setSelectedColumn("");
+        setShowTaskPopup(false);
+      }
+      dialog("Task added successfully");
+    } catch (error) {
+      console.error("Error adding task:", error);
+    } finally {
+      setShowTaskPopup(false);
+      setTaskName("");
+      setSelectedColumn("");
+    }
   };
 
-  const onEdit = (columnId, taskId, newContent) => {
-    // console.log(newContent);
-
-    setColumns((prevColumns) =>
-      prevColumns.map((col) =>
-        col.id === columnId
-          ? {
-              ...col,
-              tasks: col.tasks.map((task) =>
-                task.id === taskId ? { ...task, content: newContent } : task
-              ),
-            }
-          : col
-      )
-    );
+  const onEdit = async (columnId, taskId, newContent) => {
+    try {
+      const response = await fetch(`${API_URL}/tasks/${taskId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          content: newContent,
+          columnId,
+        }),
+      });
+      if (response.ok) {
+        setColumns((prev) =>
+          prev.map((col) =>
+            col.id === columnId
+              ? {
+                  ...col,
+                  tasks: col.tasks.map((t) =>
+                    t.id === taskId ? { ...t, content: newContent } : t
+                  ),
+                }
+              : col
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Error editing task:", error);
+    }
   };
-  const onDelete = (columnId, taskId) => {
+  const onDelete = async (columnId, taskId) => {
     if (!confirm("Are you sure you want to delete this task?")) return;
-    setColumns((prevColumns) =>
-      prevColumns.map((col) =>
-        col.id === columnId
-          ? {
-              ...col,
-              tasks: col.tasks.filter((task) => task.id !== taskId),
-            }
-          : col
-      )
-    );
+    console.log("Deleting task:", taskId);
+
+    try {
+      const response = await fetch(`${API_URL}/tasks/${taskId}`, {
+        method: "DELETE",
+      });
+      if (response.ok) {
+        setColumns((prev) =>
+          prev.map((col) =>
+            col.id === columnId
+              ? { ...col, tasks: col.tasks.filter((t) => t.id !== taskId) }
+              : col
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Error deleting task:", error);
+    }
   };
 
   const handleDragStart = (e, task, ogColumnId) => {
@@ -104,45 +121,43 @@ const KanbanBoard = () => {
     e.preventDefault();
   };
 
-  const handleDrop = (e, targetColumnId) => {
+  const handleDrop = async (e, targetColumnId) => {
     e.preventDefault();
     const taskId = e.dataTransfer.getData("taskId");
     const ogColumnId = e.dataTransfer.getData("ogColumnId");
 
     if (ogColumnId === targetColumnId) return;
-
-    setColumns((prevColumns) => {
-      let taskToMove = null;
-      const updatedCols = prevColumns.map((col) => {
-        if (col.id === ogColumnId) {
-          const taskIndex = col.tasks.findIndex((t) => t.id === taskId);
-          if (taskIndex !== -1) {
-            taskToMove = col.tasks[taskIndex];
-            return {
-              ...col,
-              tasks: col.tasks.filter((t) => t.id !== taskId),
-            };
-          }
-        }
-        return col;
+    try {
+      const response = await fetch(`${API_URL}/tasks/${taskId}/move`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          columnId: targetColumnId,
+        }),
       });
+      if (response.ok) {
+        setColumns((prev) => {
+          const newState = structuredClone(prev);
 
-      return updatedCols.map((col) => {
-        if (col.id === targetColumnId && taskToMove) {
-          return {
-            ...col,
-            tasks: [...col.tasks, taskToMove],
-          };
-        }
-        return col;
-      });
-    });
+          const ogColumn = newState.find((c) => c.id === ogColumnId);
+          const targetColumn = newState.find((c) => c.id === targetColumnId);
+
+          const task = ogColumn.tasks.find((t) => t.id === taskId);
+
+          ogColumn.tasks = ogColumn.tasks.filter((t) => t.id !== taskId);
+          targetColumn.tasks.push(task);
+
+          return newState;
+        });
+      }
+    } catch (error) {
+      console.error("Error moving task:", error);
+    }
   };
 
-  useEffect(() => {
-    localStorage.setItem("kanbantasks", JSON.stringify(columns));
-  }, [columns]);
-
+  if (loading) {
+    return <div className="text-center pt-10">Loading...</div>;
+  }
   return (
     <div className="min-h-screen pt-10 p-4 space-y-6 bg-gray-100">
       <div className="max-w-7xl mx-auto">
@@ -165,6 +180,10 @@ const KanbanBoard = () => {
               setShowTaskPopup(true);
             }}
           />
+          <p className="text-sm text-gray-600">
+            Total Tasks:{" "}
+            {columns.reduce((acc, col) => acc + col.tasks.length, 0)}
+          </p>
         </div>
 
         {/* Columns */}
