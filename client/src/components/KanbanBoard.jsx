@@ -148,7 +148,8 @@ const KanbanBoard = () => {
       <div className="max-w-7xl mx-auto">
         <div className="mb-5">
           <h1 className="text-3xl font-bold">
-            Kanban Board (By Sandesh Paudel)
+            Kanban Board (By Sandesh Paudel )
+            <span className="text-sm text-red-500"> With Live Database</span>
           </h1>
           <p>Task Management Application</p>
         </div>
