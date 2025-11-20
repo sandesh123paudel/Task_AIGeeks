@@ -2,7 +2,8 @@ import React, { use, useEffect, useState } from "react";
 import Column from "./Column";
 import Button from "./Button";
 
-const API_URL = "http://localhost:5000/api";
+const API_URL =
+  "https://task-aigeeks.onrender.com/api" || "http://localhost:5000/api";
 
 const KanbanBoard = () => {
   const [loading, setLoading] = useState(true);
