@@ -26,6 +26,8 @@ https://kanbanboard-sandesh.netlify.app/
 
 ## Live Link (Data from Backend API):
 
+(The backend server might be automatically put to sleep by the hosting service if not accessed for a while, causing initial load delays. Please first click the backend api link to wake it up before using the frontend application.)
+
 https://kanban-live-sandesh.netlify.app/
 
 Backend API Link: https://task-aigeeks.onrender.com/
